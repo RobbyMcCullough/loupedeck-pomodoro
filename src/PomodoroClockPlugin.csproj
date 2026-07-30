@@ -12,7 +12,10 @@
     <WarningLevel>4</WarningLevel>
 
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <!-- False for the same reason as <Private>false</Private> on the PluginApi reference below:
+         PluginApi's own dependencies (SkiaSharp shims, Svg, Newtonsoft, YamlDotNet, websocket-sharp)
+         are all supplied by the host at runtime. -->
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
 
     <PluginApiDir Condition="$(OS) == 'Windows_NT'">C:\Program Files\Logi\LogiPluginService\</PluginApiDir>
     <PluginApiDir Condition="$(OS) != 'Windows_NT'">/Applications/Utilities/LogiPluginService.app/Contents/MonoBundle/</PluginApiDir>
@@ -29,6 +32,11 @@
   <ItemGroup>
     <Reference Include="PluginApi">
       <HintPath>$(PluginApiDir)PluginApi.dll</HintPath>
+      <!-- Compile against it, but do not copy it into the output. Logi Plugin Service loads the
+           plugin into a process that already has PluginApi and its dependencies, so a copy here is
+           dead weight (PluginApi alone is 14 MB) and worse, it would ship one service version's
+           assemblies to users running another. -->
+      <Private>false</Private>
     </Reference>
   </ItemGroup>
 
@@ -42,9 +50,13 @@
   </Target>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Condition="$(OS) == 'Windows_NT'" Command="echo $(BaseOutputPath)$(Configuration)\ &gt; &quot;$(PluginDir)$(ProjectName).link&quot;" />
-    <Exec Condition="$(OS) != 'Windows_NT'" Command="echo $(BaseOutputPath)$(Configuration)\ &gt; $(PluginDir)$(ProjectName).link" />
-    <Message Text="🔨 Created plugin link at: $(PluginDir)$(ProjectName).link" Importance="High" />
+    <!-- The .link file makes Logi Plugin Service load the plugin straight out of this build's output
+         directory, which is what you want while developing. Build with -p:WritePluginLink=false when
+         producing a package: otherwise a Release build silently repoints an existing dev link at
+         bin/Release and the installed button stops working. -->
+    <Exec Condition="'$(WritePluginLink)' != 'false' AND $(OS) == 'Windows_NT'" Command="echo $(BaseOutputPath)$(Configuration)\ &gt; &quot;$(PluginDir)$(ProjectName).link&quot;" />
+    <Exec Condition="'$(WritePluginLink)' != 'false' AND $(OS) != 'Windows_NT'" Command="echo $(BaseOutputPath)$(Configuration)\ &gt; $(PluginDir)$(ProjectName).link" />
+    <Message Condition="'$(WritePluginLink)' != 'false'" Text="🔨 Created plugin link at: $(PluginDir)$(ProjectName).link" Importance="High" />
 
     <!-- Build with -p:ReloadPlugin=false to skip the deep link (needed in headless/CI/sandboxed
          shells, where launching a URL handler can kill the build). Restart Logi Plugin Service by

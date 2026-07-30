@@ -75,6 +75,21 @@ already tells you which it is.
 - A Loupedeck CT-family device: Loupedeck CT, Live, Live S, or the Razer Stream Controllers
 - **.NET SDK** to build. Match the runtime your installed PluginApi targets. See the note below.
 
+## Installing
+
+If you only want to use it, you do not need .NET or any of the build steps below.
+
+1. Download `PomodoroClock-<version>.lplug4` from the
+   [latest release](https://github.com/RobbyMcCullough/loupedeck-pomodoro/releases/latest).
+2. Double click it. Logi Plugin Service installs the plugin and reloads itself.
+3. In the Loupedeck app, unhide **Pomodoro Clock** under *Show and hide plugins*, then drag the
+   **Pomodoro Clock** action from the *Pomodoro* group onto any touch button.
+
+The package is currently marked macOS only. The code itself is cross platform (it picks a Windows font
+and reads the Windows clock format), but Windows is not enabled in the manifest because nobody has
+tested it there yet. To try it, uncomment `pluginFolderWin` in
+`src/package/metadata/LoupedeckPackage.yaml` and rebuild.
+
 ## Building
 
 ```sh
@@ -110,6 +125,25 @@ actions. Cold starts are also unreliable for link-loaded development plugins: th
 `Cannot load plugin ... because plugin 'PomodoroClock' is already loaded` and never load it. A deep-link
 reload always recovers. If the button is ever blank after a reboot, reload rather than assuming the
 plugin broke.
+
+### Packaging a release
+
+`.lplug4` is just a verified archive of a Release build's output directory:
+
+```sh
+./build.sh -c Release -p:WritePluginLink=false -p:ReloadPlugin=false
+logiplugintool pack ./bin/Release/ ./dist/PomodoroClock-1.0.lplug4
+logiplugintool verify ./dist/PomodoroClock-1.0.lplug4
+logiplugintool metadata ./dist/PomodoroClock-1.0.lplug4    # what the installer will show
+```
+
+`-p:WritePluginLink=false` matters. Without it, a Release build repoints your development `.link` file
+at `bin/Release`, and the button you were testing quietly stops picking up Debug builds.
+
+The project deliberately does not copy `PluginApi.dll` or its dependencies into the output. The host
+process already has them, that one file is 14 MB, and shipping it would hand users of one Logi Plugin
+Service version the assemblies from another. Turning those copies off took the package from 8.8 MB to
+33 KB.
 
 ### A note on the target framework
 
