@@ -1,10 +1,12 @@
-# Pomodoro Clock — a Loupedeck / Logi plugin
+# Pomodoro Clock, a Loupedeck / Logi plugin
+
+![A Loupedeck Live on a desk at night, the Pomodoro timer key glowing with a countdown](docs/splash.jpg)
 
 A clock button that doubles as a Pomodoro timer.
 
 Left alone it just shows the time, the way a clock button should. Tap it and it becomes a countdown:
 each tap adds five minutes, up to thirty. A second and a half after your last tap it starts counting
-down, with the wall clock tucked underneath — and the button's border drains around the edge as the
+down, with the wall clock tucked underneath, and the button's border drains around the edge as the
 session runs, green while you have time, amber as it gets on, red for the closing stretch.
 
 ![The button in each of its states](docs/states.png)
@@ -14,7 +16,7 @@ session runs, green while you have time, amber as it gets on, red for the closin
 | You do this | It does this |
 | --- | --- |
 | Tap once from the clock | Sets a 5 minute timer |
-| Keep tapping | 10, 15, 20, 25, 30 — then wraps back to 5 |
+| Keep tapping | 10, 15, 20, 25, 30, then wraps back to 5 |
 | Stop tapping | After 1.5 seconds it commits and starts counting down |
 | Tap while running | Pauses; the countdown dims and the border goes grey |
 | Tap again after a moment | Resumes with the time it had left |
@@ -26,7 +28,7 @@ While a timer is paused the caption reads `TAP=CLEAR` for as long as another tap
 settles to `PAUSED`. The shortcut is meant to be discoverable from the button rather than something
 you have to remember.
 
-While a timer is simply running there is no caption at all — the border already shows how far along
+While a timer is simply running there is no caption at all. The border already shows how far along
 you are, so the countdown gets the space instead.
 
 If a session finishes while you are away from the desk, the button stops flashing on its own after
@@ -35,7 +37,7 @@ two minutes rather than blinking at an empty room.
 ### Two readings of the same thing
 
 The border sweeps continuously; the digits step through three discrete colours. Deliberately
-different — two continuous gradients competing for attention just look mushy.
+different: two continuous gradients competing for attention just look mushy.
 
 | Time left | Digits |
 | --- | --- |
@@ -50,7 +52,7 @@ one at 1:00.
 
 ## Clock format
 
-The clock follows your operating system — one action, nothing to configure. On macOS that is
+The clock follows your operating system, so there is one action and nothing to configure. On macOS that is
 *System Settings → General → Date & Time → 24-hour time*; on Windows it is the short time format in
 Region settings. The setting is re-read every five minutes, so flipping it takes effect on its own.
 
@@ -63,21 +65,21 @@ already tells you which it is.
 > Mac with 24-hour time enabled still reports `en-US` with a `h:mm tt` short time pattern, because
 > macOS keeps that switch (`AppleICUForce24HourTime`) outside the locale identifier. Asking
 > `CultureInfo` alone gets you a 12-hour clock on a 24-hour Mac. This plugin reads the preference
-> directly on macOS and falls back to `CultureInfo` when it is unset — which is also the correct answer
+> directly on macOS and falls back to `CultureInfo` when it is unset, which is also the correct answer
 > on Windows, where the preference really does live in the short time pattern.
 
 ## Requirements
 
 - **Logi Plugin Service 6.0+** (ships with [Loupedeck](https://loupedeck.com/downloads/) or
   [Logi Options+](https://www.logitech.com/software/logi-options-plus.html))
-- A Loupedeck CT-family device — Loupedeck CT, Live, Live S, or the Razer Stream Controllers
-- **.NET SDK** to build. Match the runtime your installed PluginApi targets — see the note below.
+- A Loupedeck CT-family device: Loupedeck CT, Live, Live S, or the Razer Stream Controllers
+- **.NET SDK** to build. Match the runtime your installed PluginApi targets. See the note below.
 
 ## Building
 
 ```sh
-git clone https://github.com/USERNAME/PomodoroClockPlugin.git
-cd PomodoroClockPlugin
+git clone https://github.com/RobbyMcCullough/loupedeck-pomodoro.git
+cd loupedeck-pomodoro
 ./build.sh          # or: dotnet build
 ```
 
@@ -102,7 +104,7 @@ open "loupedeck:plugin/PomodoroClock/reload"
 ```
 
 Prefer that deep link over restarting the service, for two reasons. It is far quicker (~100 ms versus a
-full restart), and killing Logi Plugin Service outright can leave the plugin **quarantined** — the next
+full restart), and killing Logi Plugin Service outright can leave the plugin **quarantined**. The next
 start then logs `Plugin 'PomodoroClock' is disabled as it had crashed before` and registers none of its
 actions. Cold starts are also unreliable for link-loaded development plugins: they sometimes log
 `Cannot load plugin ... because plugin 'PomodoroClock' is already loaded` and never load it. A deep-link
@@ -128,7 +130,7 @@ This project therefore targets `net10.0`. If you are on an older Logi Plugin Ser
 dotnet test tests/PomodoroClock.Tests
 ```
 
-`PomodoroSession` — the whole state machine — is deliberately free of Loupedeck types, so the tests
+`PomodoroSession`, the whole state machine, is deliberately free of Loupedeck types, so the tests
 compile it in directly and run anywhere, with or without Logi Plugin Service installed.
 
 ## Layout
@@ -148,7 +150,7 @@ tests/PomodoroClock.Tests/         state machine tests
 The split is the point: `PomodoroSession` holds the behaviour and is easy to test, `PomodoroFace`
 holds the pixels, and the command is thin glue that owns a 200 ms timer.
 
-`PomodoroFace.RenderKey` deserves a mention — `ActionImageChanged()` redraws *every* button on the
+`PomodoroFace.RenderKey` deserves a mention. `ActionImageChanged()` redraws *every* button on the
 device, so the command builds a short string describing what is currently visible and only asks for a
 repaint when that string changes. Without it, a 200 ms tick would have the whole console
 re-rendering continuously for no visible gain.
@@ -170,20 +172,20 @@ Text  → x:0   y:70  width:100 height:30    the action name, printed over the b
 ```
 
 So a plugin that ships no template gets a shrunken face with a label under it, and **overriding
-`GetCommandDisplayName` does not remove that label** — the text belongs to the template, not to your
+`GetCommandDisplayName` does not remove that label**. The text belongs to the template, not to your
 code. Ship `metadata/DefaultIconTemplate.ict` with a full-bleed image item and an invisible text item,
 as this project does.
 
 Templates resolve at four precedence levels, highest first: **user** (`ActionIcons/` in the profile
-directory, written when someone edits the icon in the Icon Editor) → **action**
-(`icontemplates/<full.class.Name>.ict`) → **plugin** (`metadata/DefaultIconTemplate.ict`) → global
-default. A user-level template outranks yours, so opening the Icon Editor on a button can bring the
+directory, written when someone edits the icon in the Icon Editor), then **action**
+(`icontemplates/<full.class.Name>.ict`), then **plugin** (`metadata/DefaultIconTemplate.ict`), then the
+global default. A user-level template outranks yours, so opening the Icon Editor on a button can bring the
 label and the inset back; "Reset icon to default" clears it.
 
 ### `BitmapBuilder.DrawText` does not vertically centre
 
 Given a box, it places the baseline at `y + height / 2 + ~6.5` and grows the glyphs *upward* from
-there. So the text is roughly centred at small sizes and drifts towards the top as it gets larger — at
+there. So the text is roughly centred at small sizes and drifts towards the top as it gets larger. At
 44px on an 80px button it sits 19px too high. `PomodoroFace.DrawCentred` corrects for it using two
 measured constants, and is only sound for capitals and digits, which is all this face draws.
 
@@ -199,12 +201,12 @@ The numbers worth changing are the `static readonly` fields at the top of `src/P
 | `DoublePressWindow` | 1.2 s | How quick a second press has to be to cancel |
 | `FinishedTimeout` | 2 min | How long it flashes before giving up |
 
-`DoublePressWindow` is generous on purpose. It started at 600 ms — borrowed from mouse double-click
-convention — which was unusable in practice, because you are reacting to the button changing to
+`DoublePressWindow` is generous on purpose. It started at 600 ms, borrowed from mouse double-click
+convention, which was unusable in practice, because you are reacting to the button changing to
 `PAUSED` rather than tapping blind, and a press on the touch panel is slower than a mouse click.
 
 Colours, font and the layout bands are at the top of `src/PomodoroFace.cs`. The time is set in
-**DIN Condensed** on macOS and **Bahnschrift** on Windows — condensed faces let the digits render
+**DIN Condensed** on macOS and **Bahnschrift** on Windows. Condensed faces let the digits render
 substantially larger in 80px than a normal-width one. If neither font is installed the renderer falls
 back to the system default, which is a plainer clock rather than a broken one. Font names passed to
 `DrawText` resolve against installed system fonts, and a missing one falls back silently, so there is
@@ -217,4 +219,4 @@ change the font, re-check those two numbers.
 
 ## Licence
 
-MIT — see [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).
