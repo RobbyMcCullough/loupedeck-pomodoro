@@ -21,7 +21,7 @@ description: >-
 pluginFileName: PomodoroClockPlugin.dll
 
 # Plugin version.
-version: 1.0
+version: 1.1
 
 # Author of the plugin. The author can be a company or an individual developer.
 author: mybbor
@@ -36,7 +36,8 @@ copyright: Copyright © 2026 mybbor. All rights reserved.
 
 # Location of plugin files on Windows (relative to the plugin base directory).
 # This parameter is required to support Windows.
-#pluginFolderWin: bin
+# The plugin assembly is platform agnostic, so Windows points at the same folder.
+pluginFolderWin: bin
 
 # Location of plugin files on macOS (relative to the plugin base directory).
 # This parameter is required to support Mac.

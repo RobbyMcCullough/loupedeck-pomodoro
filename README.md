@@ -79,16 +79,16 @@ already tells you which it is.
 
 If you only want to use it, you do not need .NET or any of the build steps below.
 
-1. Download `PomodoroClock-<version>.lplug4` from the
-   [latest release](https://github.com/RobbyMcCullough/loupedeck-pomodoro/releases/latest).
+1. Download [`PomodoroClock.lplug4`](https://github.com/RobbyMcCullough/loupedeck-pomodoro/releases/latest/download/PomodoroClock.lplug4)
+   from the [latest release](https://github.com/RobbyMcCullough/loupedeck-pomodoro/releases/latest).
 2. Double click it. Logi Plugin Service installs the plugin and reloads itself.
 3. In the Loupedeck app, unhide **Pomodoro Clock** under *Show and hide plugins*, then drag the
    **Pomodoro Clock** action from the *Pomodoro* group onto any touch button.
 
-The package is currently marked macOS only. The code itself is cross platform (it picks a Windows font
-and reads the Windows clock format), but Windows is not enabled in the manifest because nobody has
-tested it there yet. To try it, uncomment `pluginFolderWin` in
-`src/package/metadata/LoupedeckPackage.yaml` and rebuild.
+macOS is tested. Windows is enabled as of 1.1 but has not been confirmed on hardware yet: the plugin
+assembly is platform agnostic and the one macOS specific call is guarded, but the font differs
+(Bahnschrift instead of DIN Condensed) and the type sizes were measured against DIN Condensed, so the
+digits may need a point or two shaved off. Reports welcome.
 
 ## Building
 
@@ -132,9 +132,9 @@ plugin broke.
 
 ```sh
 ./build.sh -c Release -p:WritePluginLink=false -p:ReloadPlugin=false
-logiplugintool pack ./bin/Release/ ./dist/PomodoroClock-1.0.lplug4
-logiplugintool verify ./dist/PomodoroClock-1.0.lplug4
-logiplugintool metadata ./dist/PomodoroClock-1.0.lplug4    # what the installer will show
+logiplugintool pack ./bin/Release/ ./dist/PomodoroClock.lplug4
+logiplugintool verify ./dist/PomodoroClock.lplug4
+logiplugintool metadata ./dist/PomodoroClock.lplug4    # what the installer will show
 ```
 
 `-p:WritePluginLink=false` matters. Without it, a Release build repoints your development `.link` file
